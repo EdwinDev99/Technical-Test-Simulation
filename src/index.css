@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+.colorRows tbody tr:nth-child(odd) {
+  background-color: cadetblue;
+  min-width: 100%;
+}
+
+.colorRows tbody tr:nth-child(even) {
+  background-color: rgb(75, 182, 182);
+}

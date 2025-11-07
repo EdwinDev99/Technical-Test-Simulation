@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import type { User } from "./types/user";
+import "./index.css";
 
 const URL = "https://randomuser.me/api/?results=100";
 
 function App() {
   const [users, setUsers] = useState<User[]>([]);
+  const [isPaintedRows, setIsPaintedRows] = useState<boolean>(false);
 
   const fetchUsers = async () => {
     const res = await fetch(URL);
@@ -16,11 +18,18 @@ function App() {
     fetchUsers();
   }, []);
 
+  const hadleTogglePainteRows = () => setIsPaintedRows(!isPaintedRows);
+
   return (
     <div className="flex flex-col items-center">
-      <h1 className="p-5 text-4xl font-bold">Lista de usuarios</h1>
+      <h1 className="p-5 text-4xl font-bold">Lista de szsuarios</h1>
       <div className="flex gap-20 justify-center m-8 ">
-        <button className=" bg-amber-700 p-2.5 rounded-2xl">color</button>
+        <button
+          onClick={hadleTogglePainteRows}
+          className=" bg-amber-700 p-2.5 rounded-2xl"
+        >
+          colorear filas
+        </button>
         <button className=" bg-amber-700 p-2.5 rounded-2xl">
           ordenar pais
         </button>
@@ -29,7 +38,7 @@ function App() {
         </button>
       </div>
 
-      <table className="w-2/4">
+      <table className={`${isPaintedRows ? "colorRows" : ""} w-2/4`}>
         <thead className="bg-blue-700">
           <tr>
             <th>foto</th>
