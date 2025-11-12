@@ -23,19 +23,18 @@ function App() {
   }, []);
 
   // const hadleTogglePainteRows = () => setIsPaintedRows(!isPaintedRows);
-  const toggleOrderByCountry = () => {
-    setFilterByCountry(!filterByContry);
-    if (filterByContry) {
-      setUsers(originalUser.current);
-      setFilterByCountry(false);
-      return;
-    }
+  const toggleOrderByCountry = () => setFilterByCountry(!filterByContry);
 
-    const userSorted = [...users].sort((a, b) =>
-      a.location.country.localeCompare(b.location.country)
-    );
-    setUsers(userSorted);
+  const hadleDeleteUserById = (uuid: string) => {
+    const userFiltered = users.filter((user) => user.login.uuid !== uuid);
+    setUsers(userFiltered);
   };
+
+  const usersRender = filterByContry
+    ? [...users].sort((a, b) =>
+        a.location.country.localeCompare(b.location.country)
+      )
+    : users;
 
   return (
     <div className="flex flex-col items-center">
@@ -49,11 +48,16 @@ function App() {
         </button>
         <button
           onClick={toggleOrderByCountry}
-          className=" bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
+          className=" bg-amber-700 p-2.5 rounded-2xl cursor-"
         >
           ordenar pais
         </button>
-        <button className=" bg-amber-700 p-2.5 rounded-2xl cursor-pointer">
+        <button
+          className=" bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
+          onClick={() => {
+            setUsers(originalUser.current);
+          }}
+        >
           restaura estado inicial
         </button>
       </div>
@@ -69,7 +73,7 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
+          {usersRender.map((u, index) => (
             <tr key={u.login.uuid} className="border-b">
               <td>
                 <img className="py-3" src={u.picture.thumbnail} alt="img" />
@@ -78,7 +82,13 @@ function App() {
               <td className="text-center">{u.name.last}</td>
               <td className="text-center">{u.location.country}</td>
               <td>
-                <button>Eliminar </button>
+                {index + 1}
+                <button
+                  className="cursor-pointer"
+                  onClick={() => hadleDeleteUserById(u.login.uuid)}
+                >
+                  Eliminar
+                </button>
               </td>
             </tr>
           ))}
