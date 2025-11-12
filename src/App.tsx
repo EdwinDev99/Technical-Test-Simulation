@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { User } from "./types/user";
 import "./index.css";
 
@@ -7,33 +7,53 @@ const URL = "https://randomuser.me/api/?results=100";
 function App() {
   const [users, setUsers] = useState<User[]>([]);
   const [isPaintedRows, setIsPaintedRows] = useState<boolean>(false);
+  const [filterByContry, setFilterByCountry] = useState(false);
+
+  const originalUser = useRef<User[]>([]);
 
   const fetchUsers = async () => {
     const res = await fetch(URL);
     const userResponse = await res.json();
     setUsers(userResponse.results);
+    originalUser.current = userResponse.results;
   };
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const hadleTogglePainteRows = () => setIsPaintedRows(!isPaintedRows);
+  // const hadleTogglePainteRows = () => setIsPaintedRows(!isPaintedRows);
+  const toggleOrderByCountry = () => {
+    setFilterByCountry(!filterByContry);
+    if (filterByContry) {
+      setUsers(originalUser.current);
+      setFilterByCountry(false);
+      return;
+    }
+
+    const userSorted = [...users].sort((a, b) =>
+      a.location.country.localeCompare(b.location.country)
+    );
+    setUsers(userSorted);
+  };
 
   return (
     <div className="flex flex-col items-center">
       <h1 className="p-5 text-4xl font-bold">Lista de szsuarios</h1>
       <div className="flex gap-20 justify-center m-8 ">
         <button
-          onClick={hadleTogglePainteRows}
-          className=" bg-amber-700 p-2.5 rounded-2xl"
+          onClick={() => setIsPaintedRows(!isPaintedRows)}
+          className=" bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
         >
           colorear filas
         </button>
-        <button className=" bg-amber-700 p-2.5 rounded-2xl">
+        <button
+          onClick={toggleOrderByCountry}
+          className=" bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
+        >
           ordenar pais
         </button>
-        <button className=" bg-amber-700 p-2.5 rounded-2xl">
+        <button className=" bg-amber-700 p-2.5 rounded-2xl cursor-pointer">
           restaura estado inicial
         </button>
       </div>
