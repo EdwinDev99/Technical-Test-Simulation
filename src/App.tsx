@@ -8,21 +8,18 @@ function App() {
   const [users, setUsers] = useState<User[]>([]);
   const [isPaintedRows, setIsPaintedRows] = useState<boolean>(false);
   const [filterByContry, setFilterByCountry] = useState(false);
+  const [searchBycountry, setsearchBycountry] = useState("");
+  const [userSorted, setUserSorted] = useState<User[]>([]);
 
   const originalUser = useRef<User[]>([]);
 
   const fetchUsers = async () => {
-    const res = await fetch(URL);
+    const res = await fetch("https://randomuser.me/api/?results=100");
     const userResponse = await res.json();
     setUsers(userResponse.results);
     originalUser.current = userResponse.results;
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  // const hadleTogglePainteRows = () => setIsPaintedRows(!isPaintedRows);
   const toggleOrderByCountry = () => setFilterByCountry(!filterByContry);
 
   const hadleDeleteUserById = (uuid: string) => {
@@ -30,68 +27,99 @@ function App() {
     setUsers(userFiltered);
   };
 
-  const usersRender = filterByContry
-    ? [...users].sort((a, b) =>
-        a.location.country.localeCompare(b.location.country)
-      )
-    : users;
+  const userRender = userSorted.filter((user) =>
+    user.location.country.toLowerCase().includes(searchBycountry.toLowerCase())
+  );
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    if (filterByContry) {
+      const newUser = [...users].sort((a, b) =>
+        a.location.country.localeCompare(b.location.country)
+      );
+      setUserSorted(newUser);
+      return;
+    }
+    setUserSorted(users);
+  }, [filterByContry, users]);
+
+  // 👇 AQUÍ va el return correcto
   return (
     <div className="flex flex-col items-center">
-      <h1 className="p-5 text-4xl font-bold">Lista de szsuarios</h1>
-      <div className="flex gap-20 justify-center m-8 ">
+      <h1 className="p-5 text-4xl font-bold">Lista de usuarios</h1>
+      <div className="flex gap-20 justify-center m-8">
         <button
           onClick={() => setIsPaintedRows(!isPaintedRows)}
-          className=" bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
+          className="bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
         >
-          colorear filas
+          Colorear filas
         </button>
         <button
           onClick={toggleOrderByCountry}
-          className=" bg-amber-700 p-2.5 rounded-2xl cursor-"
+          className="bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
         >
-          ordenar pais
+          Ordenar por país
         </button>
         <button
-          className=" bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
-          onClick={() => {
-            setUsers(originalUser.current);
-          }}
+          className="bg-amber-700 p-2.5 rounded-2xl cursor-pointer"
+          onClick={() => setUsers(originalUser.current)}
         >
-          restaura estado inicial
+          Restaurar estado inicial
         </button>
+        <input
+          type="text"
+          placeholder="Buscar por país"
+          value={searchBycountry}
+          onChange={(e) => setsearchBycountry(e.target.value)}
+          className="p-2 border rounded-lg"
+        />
       </div>
 
       <table className={`${isPaintedRows ? "colorRows" : ""} w-2/4`}>
-        <thead className="bg-blue-700">
+        <thead className="bg-blue-700 text-white">
           <tr>
-            <th>foto</th>
-            <th>nombre</th>
+            <th>Foto</th>
+            <th>Nombre</th>
             <th>Apellido</th>
-            <th>pais</th>
+            <th>País</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {usersRender.map((u, index) => (
-            <tr key={u.login.uuid} className="border-b">
-              <td>
-                <img className="py-3" src={u.picture.thumbnail} alt="img" />
-              </td>
-              <td className="text-center">{u.name.first}</td>
-              <td className="text-center">{u.name.last}</td>
-              <td className="text-center">{u.location.country}</td>
-              <td>
-                {index + 1}
-                <button
-                  className="cursor-pointer"
-                  onClick={() => hadleDeleteUserById(u.login.uuid)}
-                >
-                  Eliminar
-                </button>
+          {userRender.length === 0 ? (
+            <tr>
+              <td className="text-center py-3" colSpan={5}>
+                No hay usuarios
               </td>
             </tr>
-          ))}
+          ) : (
+            userRender.map((u, index) => (
+              <tr key={u.login.uuid} className="border-b text-center">
+                <td>
+                  <img
+                    className="py-3 mx-auto"
+                    src={u.picture.thumbnail}
+                    alt="img"
+                  />
+                </td>
+                <td>{u.name.first}</td>
+                <td>{u.name.last}</td>
+                <td>{u.location.country}</td>
+                <td>
+                  {index + 1}
+                  <button
+                    className="cursor-pointer text-red-600 font-semibold"
+                    onClick={() => hadleDeleteUserById(u.login.uuid)}
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
